@@ -33,7 +33,6 @@ def codecollors(code):
     else:
         return code
 
-
 class request(object):
     def query(self, url, cookie=None):
         if cookie:
@@ -45,27 +44,27 @@ class request(object):
         self.raw = req.text
         self.code = req.status_code
 
-
 def forloop():
     if str(arguments.string) not in str(arguments.url):
-        sys.exit("String: " + bcolors.WARNING + arguments.string + bcolors.ENDC + " not found in url: " + bcolors.FAIL + arguments.url + "\n")
+        sys.exit("String: " + bcolors.WARNING + arguments.string + bcolors.ENDC +
+                 " not found in url: " + bcolors.FAIL + arguments.url + "\n")
 
     count = 0
     duplicate = []
-    while (count != (arguments.depth + 1)):
+    while count != (arguments.depth + 1):
         print("[+] Depth: " + str(count))
         for var in dotvar:
             for bvar in befvar:
                 for word in match.keys():
                     rewrite = bvar + (var * count) + word
-                    fullrewrite = re.sub(arguments.string, rewrite, arguments.url)
+                    # Using a lambda to avoid processing escape sequences in the replacement string
+                    fullrewrite = re.sub(arguments.string, lambda m: rewrite, arguments.url)
 
                     if fullrewrite not in duplicate:
                         req = request()
-                        req.query(fullrewrite)
+                        req.query(fullrewrite, cookie=arguments.cookie)
                         catchdata = re.findall(str(match[word]), req.raw)
-                        if (len(catchdata) != 0):
-                            #print(bcolors.OKGREEN + "\n[" + str(req.code) + "] " + bcolors.ENDC + fullrewrite)
+                        if len(catchdata) != 0:
                             print(codecollors(req.code) + fullrewrite)
                             print(" Contents Found: " + str(len(catchdata)))
                         else:
@@ -73,11 +72,11 @@ def forloop():
                                 print(codecollors(req.code) + fullrewrite)
 
                         icount = 0
-                        # Print match
+                        # Print matches
                         for i in catchdata:
                             print(" " + bcolors.FAIL + str(i) + bcolors.ENDC)
-                            icount = icount + 1
-                            if (icount > 6):
+                            icount += 1
+                            if icount > 6:
                                 print(" [...]")
                                 break
                             if arguments.verbose:
@@ -85,10 +84,8 @@ def forloop():
                     duplicate.append(fullrewrite)
         count += 1
 
-
-
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='dot dot slash - A automated Path Traversal Tester. Created by @jcesrstef.')
+    parser = argparse.ArgumentParser(description='dot dot slash - A automated Path Traversal Tester. Created by @jcesarstef.')
     parser.add_argument('--url', '-u', action='store', dest='url', required=True, help='Url to attack.')
     parser.add_argument('--string', '-s', action='store', dest='string', required=True, help='String in --url to attack. Ex: document.pdf')
     parser.add_argument('--cookie', '-c', action='store', dest='cookie', required=False, help='Document cookie.')
@@ -108,7 +105,6 @@ if __name__ == '__main__':
     Created by Julio Cesar Stefanutto (@jcesarstef)\n\
     \n\
     Starting run in: \033[94m" + arguments.url + "\033[0m\n\
-    \
     "
     print(banner)
     forloop()
