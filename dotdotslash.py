@@ -64,7 +64,7 @@ def forloop(arguments):
                  " not found in url: " + bcolors.FAIL + arguments.url + "\n")
     
     duplicate = set()
-    for count in range(arguments.depth + 1):
+    for count in range(arguments.min_depth, arguments.max_depth + 1):
         print("[+] Depth: " + str(count))
         tasks = []
         for var in dotvar:
@@ -100,10 +100,35 @@ if __name__ == '__main__':
     parser.add_argument('--url', '-u', action='store', dest='url', required=True, help='Url to attack.')
     parser.add_argument('--string', '-s', action='store', dest='string', required=True, help='String in --url to attack. Ex: document.pdf')
     parser.add_argument('--cookie', '-c', action='store', dest='cookie', required=False, help='Document cookie.')
-    parser.add_argument('--depth', '-d', action='store', dest='depth', required=False, type=int, default=6, help='How deep we will go?')
+    parser.add_argument('--depth', '-d', action='store', dest='depth', required=False, type=int, help='How deep we will go? (backward compatibility, sets range 0 to depth)')
+    parser.add_argument('--min-depth', action='store', dest='min_depth', required=False, type=int, help='Minimum depth to test (use with --max-depth)')
+    parser.add_argument('--max-depth', action='store', dest='max_depth', required=False, type=int, help='Maximum depth to test (use with --min-depth)')
     parser.add_argument('--verbose', '-v', action='store_true', required=False, help='Show requests')
     parser.add_argument('--extension', '-e', action='append', dest='extension', required=False, help='File extension for null byte injection (e.g., ".png", ".txt"). Can be used multiple times.')
     arguments = parser.parse_args()
+
+    # determine depth range
+    if arguments.depth is not None:
+        if arguments.min_depth is not None or arguments.max_depth is not None:
+            sys.exit("cannot use --depth with --min-depth/--max-depth")
+        min_depth = 0
+        max_depth = arguments.depth
+    elif arguments.min_depth is not None and arguments.max_depth is not None:
+        if arguments.min_depth < 0:
+            sys.exit("min-depth must be non-negative")
+        if arguments.max_depth < arguments.min_depth:
+            sys.exit("max-depth must be >= min-depth")
+        min_depth = arguments.min_depth
+        max_depth = arguments.max_depth
+    elif arguments.min_depth is not None or arguments.max_depth is not None:
+        sys.exit("both --min-depth and --max-depth must be specified together")
+    else:
+        # default behavior
+        min_depth = 0
+        max_depth = 6
+    
+    arguments.min_depth = min_depth
+    arguments.max_depth = max_depth
 
     banner = "\
          _       _         _       _         _           _     \n\
