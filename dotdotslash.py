@@ -149,7 +149,7 @@ def forloop_lightweight(arguments):
                         print(result)
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='dot dot slash - An automated Path Traversal Tester. Created by @jcesarstef.')
+    parser = argparse.ArgumentParser(description='dot dot slash - An automated Path Traversal Tester. Created by @jcesarstef, ByteMastermind\'s fork')
     parser.add_argument('--url', '-u', action='store', dest='url', required=True, help='Url to attack.')
     parser.add_argument('--string', '-s', action='store', dest='string', required=True, help='String in --url to attack. Ex: document.pdf')
     parser.add_argument('--cookie', '-c', action='store', dest='cookie', required=False, help='Document cookie.')
